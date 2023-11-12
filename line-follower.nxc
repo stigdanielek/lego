@@ -4,10 +4,10 @@
 #define DARK_LEVEL 800
 #define LIGHT_LEVEL 1700
 #define THRESHOLD (DARK_LEVEL + LIGHT_LEVEL) / 2
-#define SPEED 10
+#define SPEED 20
 
-long getSensorValue() {
-  long sensorVal;
+float getSensorValue() {
+  float sensorVal;
   ColorSensorReadType csr;
   csr.Port = SENSOR;
   SysColorSensorRead(csr);
@@ -17,14 +17,32 @@ long getSensorValue() {
   return sensorVal;
 }
 
+sub printInfo(float sensorValue, float error, float left, float right) {
+  TextOut(0, LCD_LINE1, "Line follower:");
+  TextOut(0, LCD_LINE2, "sensor:            ");
+  NumOut(48, LCD_LINE2, sensorValue);
+  TextOut(0, LCD_LINE3, "error:            ");
+  NumOut(48, LCD_LINE3, error);
+  TextOut(0, LCD_LINE4, "left:            ");
+  NumOut(48, LCD_LINE4, left);
+  TextOut(0, LCD_LINE5, "right:            ");
+  NumOut(48, LCD_LINE5, right);
+}
+
+float limitValue(float value) {
+  if (value > 100) return 100;
+  else if (value < -100) return -100;
+  return value;
+}
+
 task main() {
   SetSensorColorFull(SENSOR);
 
-  long sensorValue;
-  int error;
-  int left;
-  int right;
-  int turn;
+  float sensorValue;
+  float error;
+  float left;
+  float right;
+  float turn;
 
   while (true) {
     left = 0;
@@ -36,20 +54,10 @@ task main() {
     left = SPEED - turn;
     right = SPEED + turn;
 
-    if (left > 100) left = 100;
-    else if (left < -100) left = -100;
-    if (right > 100) right = 100;
-    else if (right < -100) right = -100;
+    left = limitValue(left);
+    right = limitValue(right);
 
-    TextOut(0, LCD_LINE1, "Line follower:");
-    TextOut(0, LCD_LINE2, "sensor:            ");
-    NumOut(48, LCD_LINE2, sensorValue);
-    TextOut(0, LCD_LINE3, "error:            ");
-    NumOut(48, LCD_LINE3, error);
-    TextOut(0, LCD_LINE4, "left:            ");
-    NumOut(48, LCD_LINE4, left);
-    TextOut(0, LCD_LINE5, "right:            ");
-    NumOut(48, LCD_LINE5, right);
+    printInfo(sensorValue, error, left, right);
 
     OnFwd(LEFT_MOTOR, left);
     OnFwd(RIGHT_MOTOR, right);
