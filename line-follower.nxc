@@ -1,0 +1,57 @@
+#define SENSOR IN_3
+#define LEFT_MOTOR OUT_B
+#define RIGHT_MOTOR OUT_C
+#define DARK_LEVEL 800
+#define LIGHT_LEVEL 1700
+#define THRESHOLD (DARK_LEVEL + LIGHT_LEVEL) / 2
+#define SPEED 10
+
+long getSensorValue() {
+  long sensorVal;
+  ColorSensorReadType csr;
+  csr.Port = SENSOR;
+  SysColorSensorRead(csr);
+  if (csr.Result == NO_ERR) {
+    sensorVal = csr.RawArray[0] + csr.RawArray[1] + csr.RawArray[2];
+  }
+  return sensorVal;
+}
+
+task main() {
+  SetSensorColorFull(SENSOR);
+
+  long sensorValue;
+  int error;
+  int left;
+  int right;
+  int turn;
+
+  while (true) {
+    left = 0;
+    right = 0;
+    sensorValue = getSensorValue();
+    error = sensorValue - THRESHOLD;
+
+    turn = 0.1 * error;
+    left = SPEED - turn;
+    right = SPEED + turn;
+
+    if (left > 100) left = 100;
+    else if (left < -100) left = -100;
+    if (right > 100) right = 100;
+    else if (right < -100) right = -100;
+
+    TextOut(0, LCD_LINE1, "Line follower:");
+    TextOut(0, LCD_LINE2, "sensor:            ");
+    NumOut(48, LCD_LINE2, sensorValue);
+    TextOut(0, LCD_LINE3, "error:            ");
+    NumOut(48, LCD_LINE3, error);
+    TextOut(0, LCD_LINE4, "left:            ");
+    NumOut(48, LCD_LINE4, left);
+    TextOut(0, LCD_LINE5, "right:            ");
+    NumOut(48, LCD_LINE5, right);
+
+    OnFwd(LEFT_MOTOR, left);
+    OnFwd(RIGHT_MOTOR, right);
+  }
+}
