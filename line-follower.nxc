@@ -17,22 +17,18 @@ float getSensorValue() {
   return sensorVal;
 }
 
-sub printInfo(float sensorValue, float error, float left, float right) {
-  TextOut(0, LCD_LINE1, "Line follower:");
-  TextOut(0, LCD_LINE2, "sensor:            ");
-  NumOut(48, LCD_LINE2, sensorValue);
-  TextOut(0, LCD_LINE3, "error:            ");
-  NumOut(48, LCD_LINE3, error);
-  TextOut(0, LCD_LINE4, "left:            ");
-  NumOut(48, LCD_LINE4, left);
-  TextOut(0, LCD_LINE5, "right:            ");
-  NumOut(48, LCD_LINE5, right);
-}
-
 float limitValue(float value) {
   if (value > 100) return 100;
   else if (value < -100) return -100;
   return value;
+}
+
+sub printInfo(float sensorValue, float error, float left, float right) {
+  TextOut(0, LCD_LINE1, "Line follower");
+  TextOut(0, LCD_LINE2, FormatNum("sensor: %6.2f", sensorValue));
+  TextOut(0, LCD_LINE3, FormatNum("error:  %6.2f", error));
+  TextOut(0, LCD_LINE4, FormatNum("left:   %6.2f", left));
+  TextOut(0, LCD_LINE5, FormatNum("right:  %6.2f", right));
 }
 
 task main() {
@@ -40,13 +36,11 @@ task main() {
 
   float sensorValue;
   float error;
+  float turn;
   float left;
   float right;
-  float turn;
 
   while (true) {
-    left = 0;
-    right = 0;
     sensorValue = getSensorValue();
     error = sensorValue - THRESHOLD;
 
